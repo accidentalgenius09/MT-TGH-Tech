@@ -4,12 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { fetchProduct } from "@/lib/fetchProduct";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const productId = Number(params.id);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isFavourite, setIsFavourite] = useState(false);
+  const [isInCart, setIsInCart] = useState(false);
 
   const { data: product, isLoading, isError } = useQuery({
     queryKey: ["product", productId],
@@ -57,6 +60,37 @@ export default function ProductDetailPage() {
 
   const discountPrice = product.price - (product.price * product.discountPercentage) / 100;
 
+  const handleAddToCart = () => {
+    if (isInCart) {
+      setIsInCart(false);
+      toast.success(`${product.title} removed from cart!`, {
+        icon: "🗑️",
+        duration: 3000,
+      });
+    } else {
+      setIsInCart(true);
+      toast.success(`${product.title} added to cart!`, {
+        icon: "🛒",
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleFavourite = () => {
+    setIsFavourite(!isFavourite);
+    if (!isFavourite) {
+      toast.success("Added to favourites!", {
+        icon: "❤️",
+        duration: 3000,
+      });
+    } else {
+      toast.success("Removed from favourites!", {
+        icon: "💔",
+        duration: 3000,
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -88,7 +122,7 @@ export default function ProductDetailPage() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              
+
               {/* Thumbnail Gallery */}
               {product.images && product.images.length > 1 && (
                 <div className="grid grid-cols-4 gap-3">
@@ -96,11 +130,10 @@ export default function ProductDetailPage() {
                     <button
                       key={index}
                       onClick={() => setSelectedImageIndex(index)}
-                      className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                        selectedImageIndex === index
-                          ? "border-blue-600 ring-2 ring-blue-200"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
+                      className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedImageIndex === index
+                        ? "border-blue-600 ring-2 ring-blue-200"
+                        : "border-gray-200 hover:border-gray-300"
+                        }`}
                     >
                       <img
                         src={image}
@@ -116,14 +149,17 @@ export default function ProductDetailPage() {
             {/* Product Info */}
             <div className="p-6 lg:p-8 lg:pt-12">
               <div className="mb-4">
-                <span className="inline-block px-3 py-1 text-sm font-semibold text-blue-700 bg-blue-100 rounded-full mb-3">
-                  {product.category}
-                </span>
-                {product.brand && (
-                  <span className="inline-block ml-2 px-3 py-1 text-sm font-semibold text-gray-700 bg-gray-100 rounded-full">
+              {product.brand && (
+                  <span className="inline-block me-2 px-3 py-1 text-sm font-semibold text-gray-700 bg-gray-100 rounded-full">
                     {product.brand}
                   </span>
                 )}
+                {product.tags && product.tags.map((tag: string) => (
+                  <span className="inline-block me-2 px-3 py-1 text-sm font-semibold text-blue-700 bg-blue-100 rounded-full mb-3">
+                    {tag}
+                  </span>
+                ))}
+                
               </div>
 
               <h1 className="text-4xl font-bold text-gray-900 mb-4">{product.title}</h1>
@@ -134,11 +170,10 @@ export default function ProductDetailPage() {
                   {[...Array(5)].map((_, i) => (
                     <svg
                       key={i}
-                      className={`w-5 h-5 ${
-                        i < Math.floor(product.rating)
-                          ? "text-yellow-400 fill-current"
-                          : "text-gray-300"
-                      }`}
+                      className={`w-5 h-5 ${i < Math.floor(product.rating)
+                        ? "text-yellow-400 fill-current"
+                        : "text-gray-300"
+                        }`}
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -177,11 +212,45 @@ export default function ProductDetailPage() {
 
               {/* Action Buttons */}
               <div className="flex gap-4">
-                <button className="flex-1 px-6 py-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl">
-                  Add to Cart
+                <button
+                  onClick={handleAddToCart}
+                  className={`group flex-1 px-6 py-4 font-semibold rounded-xl transition-all shadow-lg relative overflow-hidden ${isInCart
+                    ? "bg-green-600 text-white hover:bg-green-700"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                    }`}
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    {!isInCart && (
+                      <svg
+                        className="w-5 h-5 group-hover:animate-bounce"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    )}
+                    {isInCart ? "Added to Cart" : "Add to Cart"}
+                  </span>
+                  {!isInCart && (
+                    <span className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out"></span>
+                  )}
                 </button>
-                <button className="px-6 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:border-gray-400 transition-all">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button
+                  onClick={handleFavourite}
+                  className={`group px-6 py-4 border-2 rounded-xl transition-all ${isFavourite
+                    ? "border-red-500 bg-red-50 text-red-600 hover:bg-red-100 hover:border-red-600"
+                    : "border-gray-300 text-gray-700 hover:border-red-400 hover:text-red-500 hover:bg-red-50"
+                    }`}
+                >
+                  <svg
+                    className={`w-6 h-6 transition-all duration-300 ${isFavourite 
+                      ? "fill-current animate-pulse" 
+                      : "fill-none group-hover:fill-red-200"
+                    }`}
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </button>
