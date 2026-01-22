@@ -6,6 +6,8 @@ interface Params {
     sort: string;
 }
 
+export const API = "https://dummyjson.com/products"
+
 export async function fetchProducts({
     pageParam = 0,
     search,
@@ -17,7 +19,7 @@ export async function fetchProducts({
 
     if (sort) {
         const sortBy = sort === "price" ? "price" : "title";
-        url = `https://dummyjson.com/products?sortBy=${sortBy}&order=asc&limit=${limit}&skip=${pageParam}`;
+        url = `${API}?sortBy=${sortBy}&order=asc&limit=${limit}&skip=${pageParam}`;
         if (search) {
             const res = await fetch(url);
             if (!res.ok) throw new Error("Failed to fetch products");
@@ -32,9 +34,9 @@ export async function fetchProducts({
             };
         }
     } else if (search) {
-        url = `https://dummyjson.com/products/search?q=${search}&limit=${limit}&skip=${pageParam}`;
+        url = `${API}/search?q=${search}&limit=${limit}&skip=${pageParam}`;
     } else {
-        url = `https://dummyjson.com/products?limit=${limit}&skip=${pageParam}`;
+        url = `${API}?limit=${limit}&skip=${pageParam}`;
     }
 
     const res = await fetch(url);
