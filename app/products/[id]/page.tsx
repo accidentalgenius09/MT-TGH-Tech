@@ -48,7 +48,7 @@ export default function ProductDetailPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Product not found</h2>
             <button
               onClick={() => router.push("/")}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 cursor-pointer py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               Go back to products
             </button>
@@ -58,7 +58,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  const discountPrice = product.price - (product.price * product.discountPercentage) / 100;
+  const OGPrice = product.price + (product.price * product.discountPercentage) / 100;
 
   const handleAddToCart = () => {
     if (isInCart) {
@@ -97,7 +97,7 @@ export default function ProductDetailPage() {
         {/* Back Button */}
         <button
           onClick={() => router.back()}
-          className="mb-6 flex items-center text-gray-600 hover:text-gray-900 transition-colors group"
+          className="mb-6 flex items-center cursor-pointer text-gray-600 hover:text-gray-900 transition-colors group"
         >
           <svg
             className="w-5 h-5 mr-2 transform group-hover:-translate-x-1 transition-transform"
@@ -149,17 +149,23 @@ export default function ProductDetailPage() {
             {/* Product Info */}
             <div className="p-6 lg:p-8 lg:pt-12">
               <div className="mb-4">
-              {product.brand && (
+                {product.brand && (
                   <span className="inline-block me-2 px-3 py-1 text-sm font-semibold text-gray-700 bg-gray-100 rounded-full">
                     {product.brand}
                   </span>
                 )}
-                {product.tags && product.tags.map((tag: string) => (
-                  <span className="inline-block me-2 px-3 py-1 text-sm font-semibold text-blue-700 bg-blue-100 rounded-full mb-3">
-                    {tag}
-                  </span>
-                ))}
-                
+                {product.category && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/category/${encodeURIComponent(product.category)}`);
+                    }}
+                    className="inline-block me-2 px-3 py-1 text-sm font-semibold text-blue-700 bg-blue-100 rounded-full mb-3 hover:bg-blue-200 hover:text-blue-800 transition-colors cursor-pointer"
+                  >
+                    #{product.category}
+                  </button>
+                )}
+
               </div>
 
               <h1 className="text-4xl font-bold text-gray-900 mb-4">{product.title}</h1>
@@ -189,12 +195,12 @@ export default function ProductDetailPage() {
               <div className="mb-6">
                 <div className="flex items-baseline gap-3 mb-2">
                   <span className="text-4xl font-bold text-gray-900">
-                    ₹{discountPrice.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                    ₹{product.price}
                   </span>
                   {product.discountPercentage > 0 && (
                     <>
                       <span className="text-2xl text-gray-400 line-through">
-                        ₹{product.price.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                        ₹{OGPrice.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
                       </span>
                       <span className="px-3 py-1 text-sm font-bold text-green-700 bg-green-100 rounded-full">
                         {product.discountPercentage}% OFF
@@ -244,10 +250,10 @@ export default function ProductDetailPage() {
                     }`}
                 >
                   <svg
-                    className={`w-6 h-6 transition-all duration-300 ${isFavourite 
-                      ? "fill-current animate-pulse" 
+                    className={`w-6 h-6 transition-all duration-300 ${isFavourite
+                      ? "fill-current animate-pulse"
                       : "fill-none group-hover:fill-red-200"
-                    }`}
+                      }`}
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
